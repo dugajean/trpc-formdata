@@ -1,0 +1,20 @@
+{
+  "name": "trpc-formdata",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "bun run build.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.0.6",
+    "@types/bun": "latest",
+    "bun-plugin-dts": "^0.3.0",
+    "tsc": "^2.0.4"
+  },
+  "peerDependencies": {
+    "@trpc/client": "^11.4.3",
+    "@trpc/server": "^11.4.3",
+    "typescript": "^5",
+    "zod": "^3.25.67"
+  }
+}
