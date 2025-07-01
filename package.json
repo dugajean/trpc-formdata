@@ -1,7 +1,10 @@
 {
   "name": "trpc-formdata",
+  "version": "0.1.0",
+  "description": "A tRPC link for handling FormData with file uploads and validation",
   "module": "index.ts",
   "type": "module",
+  "license": "MIT",
   "scripts": {
     "build": "bun run build.ts"
   },
