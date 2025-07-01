@@ -2,9 +2,25 @@
   "name": "trpc-formdata",
   "version": "0.1.0",
   "description": "A tRPC link for handling FormData with file uploads and validation",
-  "module": "index.ts",
   "type": "module",
   "license": "MIT",
+  "exports": {
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js"
+    },
+    "./util": {
+      "types": "./dist/util.d.ts",
+      "import": "./dist/util.js"
+    },
+    "./zod": {
+      "types": "./dist/zod.d.ts",
+      "import": "./dist/zod.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "bun run build.ts"
   },
