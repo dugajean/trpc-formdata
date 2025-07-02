@@ -1,1 +1,0 @@
-function a(t){let r=new FormData;for(let o in t){let n=t[o];if(Array.isArray(n)){for(let e of n)r.append(o,e);continue}r.append(o,n)}return r}function i(t){let r={};for(let[o,n]of t.entries())if(o in r)if(Array.isArray(r[o]))r[o].push(n);else r[o]=[r[o],n];else r[o]=n;return r}export{a as objectToFormData,i as formDataToObject};export{i as a};

@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+          
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+        
+      - name: Run linter
+        run: bunx @biomejs/biome check .
+        
+      - name: Build package
+        run: bun run build
+        
+      - name: Verify package structure
+        run: |
+          echo "Checking dist directory..."
+          ls -la dist/
+          echo "Verifying TypeScript declarations..."
+          test -f dist/client.d.ts
+          test -f dist/util.d.ts
+          test -f dist/zod.d.ts
+          echo "All declaration files exist!"

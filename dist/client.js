@@ -1,1 +1,0 @@
-import{httpBatchLink as E,httpLink as G,splitLink as I}from"@trpc/client";function Q(j,q){return I({condition:(x)=>x.input instanceof FormData,true:G({...j,fetch:J(j.fetch)}),false:q??E(j)})}var J=(j)=>async(...q)=>{let[x,z]=q,A={...z?.headers};if(z?.body instanceof FormData){let{"Content-Type":N,...D}=A;A=D}return(j??fetch)(x,{...z,headers:A})};export{Q as formDataLink};

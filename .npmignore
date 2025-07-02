@@ -1,0 +1,32 @@
+# Source files
+src/
+example/
+
+# Development files
+*.ts
+!*.d.ts
+tsconfig.json
+build.ts
+biome.json
+bun.lock
+
+# CI/CD
+.github/
+
+# Documentation development files
+README.md.old
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencies
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

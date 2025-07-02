@@ -22,7 +22,10 @@
     "dist"
   ],
   "scripts": {
-    "build": "bun run build.ts"
+    "build": "bun run build.ts",
+    "lint": "biome check src/",
+    "lint:fix": "biome check --write src/",
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.0.6",
