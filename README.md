@@ -41,15 +41,11 @@ import { formDataInput, zFile } from "trpc-formdata/zod";
 import { publicProcedure, router } from "./trpc";
 
 // Define your FormData schema
-const createUserSchema = formDataInput(
+const createUserSchema = formDataInput( /* 👈 */
   z.object({
     name: z.string().min(1, "Name is required"),
     email: z.string().email("Invalid email"),
-    avatar: zFile({
-      acceptedMimeTypes: ["image/jpeg", "image/png"],
-      maxSize: 5 * 1024 * 1024, // 5MB
-    }).optional(),
-    documents: zFile({
+    documents: zFile({ /* 👈 */
       acceptedMimeTypes: ["application/pdf"],
       maxSize: 10 * 1024 * 1024, // 10MB
     }).array(),
@@ -62,29 +58,11 @@ const appRouter = router({
       .input(createUserSchema)
       .mutation(async ({ input }) => {
         // input is fully typed!
-        const { name, email, avatar, documents } = input;
-        
-        // Handle file uploads
-        if (avatar) {
-          const buffer = await avatar.arrayBuffer();
-          // Save avatar file...
-        }
-        
-        for (const doc of documents) {
-          const buffer = await doc.arrayBuffer();
-          // Save document files...
-        }
-        
-        // Create user in database
-        return { id: "1", name, email };
+        const { avatar, documents } = input; /* 👈 */
+        // ...
       }),
   },
 });
-
-export type AppRouter = typeof appRouter;
-
-const server = createHTTPServer({ router: appRouter });
-server.listen(3000);
 ```
 
 ### 2. Client Setup
@@ -92,15 +70,10 @@ server.listen(3000);
 Configure the tRPC client with FormData support:
 
 ```typescript
-import { createTRPCClient } from "@trpc/client";
-import { formDataLink } from "trpc-formdata/client";
-import type { AppRouter } from "./server";
-
 const client = createTRPCClient<AppRouter>({
   links: [
-    formDataLink({
+    formDataLink({ /* 👈 */
       url: "http://localhost:3000",
-      // Optional: provide a custom transformer
       transformer: superjson,
     }),
   ],
@@ -125,7 +98,7 @@ async function createUser() {
   formData.append("documents", pdfFile);
   
   // This is fully type-safe!
-  const user = await client.user.create.mutate(formData);
+  const user = await client.user.create.mutate(formData); /* 👈 */
   console.log("Created user:", user);
 }
 ```
@@ -137,14 +110,13 @@ async function createUser() {
 Creates a tRPC link that automatically handles FormData requests.
 
 - **options**: Standard tRPC HTTP link options
-- **fallback**: Optional link to use for non-FormData requests (defaults to `httpBatchLink`)
+- **fallback**: Optional link to use for non-FormData requests (defaults to `httpBatchLink`) and passes the options from the first argument.
 
 ```typescript
 import { formDataLink } from "trpc-formdata/client";
 
 const link = formDataLink({
   url: "http://localhost:3000",
-  headers: { Authorization: "Bearer token" },
 });
 ```
 
