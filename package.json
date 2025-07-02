@@ -3,6 +3,10 @@
   "version": "0.1.1",
   "description": "A tRPC link for handling FormData with file uploads and validation",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dugajean/trpc-formdata.git"
+  },
   "license": "MIT",
   "exports": {
     "./client": {
