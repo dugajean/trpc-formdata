@@ -11,9 +11,25 @@ export function formDataLink(
 	opts: HTTPLinkOptions<any>,
 	falseCaseOverride?: TRPCLink<any>,
 ) {
+	const optsAdjusted = {
+		...opts,
+		fetch: fetchFn(opts.fetch),
+	};
+
+	if (
+		opts?.transformer &&
+		typeof opts.transformer === "object" &&
+		"deserialize" in opts.transformer
+	) {
+		optsAdjusted.transformer = {
+			serialize: (data) => data,
+			deserialize: opts.transformer.deserialize,
+		};
+	}
+
 	return splitLink({
 		condition: (op) => op.input instanceof FormData,
-		true: httpLink({ ...opts, fetch: fetchFn(opts.fetch) }),
+		true: httpLink(optsAdjusted),
 		false:
 			falseCaseOverride ?? httpBatchLink(opts as HTTPBatchLinkOptions<any>),
 	});
