@@ -39,17 +39,27 @@ jobs:
           
       - name: Update package.json version
         run: |
-          # Update package.json with the release version
-          npm version ${{ env.VERSION }} --no-git-tag-version
-          echo "Updated package.json to version ${{ env.VERSION }}"
+          # Get current version from package.json
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Current package.json version: $CURRENT_VERSION"
+          echo "Release tag version: ${{ env.VERSION }}"
+          
+          if [ "${{ env.VERSION }}" != "$CURRENT_VERSION" ]; then
+            echo "Updating package.json version from $CURRENT_VERSION to ${{ env.VERSION }}"
+            npm version ${{ env.VERSION }} --no-git-tag-version
+            echo "VERSION_UPDATED=true" >> $GITHUB_ENV
+          else
+            echo "Package.json version already matches release tag (${{ env.VERSION }})"
+            echo "VERSION_UPDATED=false" >> $GITHUB_ENV
+          fi
           
       - name: Commit version update
         run: |
-          git add package.json
-          if git diff --staged --quiet; then
-            echo "No changes to package.json"
-          else
+          if [ "${{ env.VERSION_UPDATED }}" = "true" ]; then
+            git add package.json
             git commit -m "chore: update package.json version to v${{ env.VERSION }}"
             git push origin main
             echo "Updated package.json version and pushed to main"
+          else
+            echo "No version update needed - package.json already has correct version"
           fi
