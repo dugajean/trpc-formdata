@@ -23,7 +23,7 @@ jobs:
         run: bun install --frozen-lockfile
         
       - name: Run linter
-        run: bunx @biomejs/biome check .
+        run: bun run lint
         
       - name: Build package
         run: bun run build

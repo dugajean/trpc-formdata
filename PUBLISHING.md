@@ -2,9 +2,9 @@
 
 ## Prerequisites
 
-1. **Create an npm account** at https://www.npmjs.com if you don't have one
+1. **Create an npm account** at <https://www.npmjs.com> if you don't have one
 2. **Generate an npm access token**:
-   - Go to https://www.npmjs.com/settings/tokens
+   - Go to <https://www.npmjs.com/settings/tokens>
    - Click "Generate New Token" → "Automation"
    - Copy the generated token
 
@@ -39,6 +39,7 @@
 3. Click "Run workflow" on the main branch
 
 ### Method 3: Local Publishing
+
 ```bash
 # Build the package
 bun run build
@@ -56,6 +57,7 @@ npm publish
 ## Package Contents
 
 The published package will include:
+
 - `dist/` - Compiled JavaScript and TypeScript declarations
 - `package.json` - Package metadata
 - `LICENSE` - MIT license
@@ -64,5 +66,6 @@ The published package will include:
 ## Verification
 
 After publishing, verify at:
-- https://www.npmjs.com/package/trpc-formdata
+
+- <https://www.npmjs.com/package/trpc-formdata>
 - Test installation: `npm install trpc-formdata`
