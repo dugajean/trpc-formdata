@@ -1,6 +1,6 @@
 {
   "name": "trpc-formdata",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A tRPC link for handling FormData with file uploads and validation",
   "type": "module",
   "repository": {
