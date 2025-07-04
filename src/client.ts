@@ -7,6 +7,14 @@ import {
 	type TRPCLink,
 } from "@trpc/client";
 
+/**
+ * Creates a tRPC link that handles FormData requests differently from regular requests.
+ * Uses splitLink to route FormData requests through httpLink and other requests through httpBatchLink.
+ *
+ * @param opts - HTTP link options for configuring the connection
+ * @param falseCaseOverride - Optional override link for non-FormData requests (defaults to httpBatchLink)
+ * @returns A tRPC link that conditionally handles FormData vs regular requests
+ */
 export function formDataLink(
 	opts: HTTPLinkOptions<any>,
 	falseCaseOverride?: TRPCLink<any>,
@@ -38,6 +46,13 @@ export function formDataLink(
 type FetchEsque = HTTPLinkOptions<any>["fetch"];
 type ResponseEsque = ReturnType<NonNullable<FetchEsque>>;
 
+/**
+ * Creates a custom fetch function that properly handles FormData requests.
+ * Removes Content-Type header for FormData to let the browser set the correct boundary.
+ *
+ * @param providedFetch - Optional custom fetch function, defaults to global fetch
+ * @returns A fetch function that handles FormData correctly
+ */
 const fetchFn =
 	(providedFetch: FetchEsque | undefined): FetchEsque =>
 	async (...args) => {

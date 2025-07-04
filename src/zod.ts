@@ -2,6 +2,12 @@
 import z, { type ZodTypeAny } from "zod";
 import { formDataToObject } from "./util";
 
+/**
+ * Transforms a FormData instance into an object and validates it against a provided Zod schema.
+ * @template TSchema - The type of the Zod schema to validate against
+ * @param schema - The Zod schema to validate the transformed FormData against
+ * @returns A Zod schema that accepts FormData, transforms it to an object, and validates it
+ */
 export const formDataInput = <TSchema extends ZodTypeAny>(schema: TSchema) =>
 	z.instanceof(FormData).transform(formDataToObject).pipe(schema);
 
@@ -16,29 +22,6 @@ export interface FileErrorMessages {
 	fileTooLargeMessage?: string;
 	fileTooSmallMessage?: string;
 }
-
-/**
- * Transforms a FormData instance into an object and validates it against a provided Zod schema.
- * @template TSchema - The type of the Zod schema to validate against
- * @param schema - The Zod schema to validate the transformed FormData against
- * @returns A Zod schema that accepts FormData, transforms it to an object, and validates it
- */
-
-/**
- * Options for file validation
- * @interface FileOptions
- * @property {string[]} [acceptedMimeTypes] - List of accepted MIME types (e.g., 'image/jpeg', 'application/pdf')
- * @property {number} [maxSize] - Maximum file size in bytes
- * @property {number} [minSize] - Minimum file size in bytes
- */
-
-/**
- * Custom error messages for file validation
- * @interface FileErrorMessages
- * @property {string} [invalidTypeMessage] - Custom message for invalid file type errors
- * @property {string} [fileTooLargeMessage] - Custom message for file too large errors
- * @property {string} [fileTooSmallMessage] - Custom message for file too small errors
- */
 
 /**
  * Creates a Zod schema for validating File objects with optional constraints
