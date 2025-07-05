@@ -135,7 +135,10 @@ class FilesSchema {
 	 */
 	toZod(): z.ZodType<File[]> {
 		return z.preprocess(
-			(val) => (val as []).filter((v) => v !== "null"),
+			(val) => {
+				const array = Array.isArray(val) ? val : [val];
+				return array.filter((v) => v !== "null");
+			},
 			(() => {
 				let fileSchema = z.file();
 				if (this.options.minSize !== undefined) {
