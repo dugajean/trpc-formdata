@@ -12,7 +12,7 @@ export const formDataInput = <TSchema extends $ZodAny>(schema: TSchema) =>
 	z.instanceof(FormData).transform(formDataToObject).pipe(schema);
 
 export interface FileOptions {
-	acceptedMimeTypes?: string[];
+	mimes?: string[];
 	maxSize?: number;
 	minSize?: number;
 }
@@ -34,105 +34,156 @@ export interface FilesErrorMessages {
 }
 
 /**
- * Creates a Zod schema for validating arrays of File objects with optional constraints.
+ * A chainable builder for creating Zod schemas that validate arrays of File objects.
  * Automatically filters out "null" placeholders from the input array.
- *
- * @param {Object} [options] - Configuration options for file validation
- * @param {number} [options.minSize] - Minimum file size in bytes
- * @param {number} [options.maxSize] - Maximum file size in bytes
- * @param {string[]} [options.acceptedMimeTypes] - Array of accepted MIME types (e.g., ['image/jpeg', 'image/png'])
- * @param {number} [options.minFiles] - Minimum number of files required
- * @param {number} [options.maxFiles] - Maximum number of files allowed
- * @param {Object} [messages] - Custom error messages for validation failures
- * @param {string} [messages.fileTooSmallMessage] - Error message when file is too small
- * @param {string} [messages.fileTooLargeMessage] - Error message when file is too large
- * @param {string} [messages.invalidMimeTypeMessage] - Error message when file has invalid MIME type
- * @param {string} [messages.tooFewFilesMessage] - Error message when too few files are provided
- * @param {string} [messages.tooManyFilesMessage] - Error message when too many files are provided
- * @returns {z.ZodType<File[]>} A Zod schema that validates File arrays
  *
  * @example
  * // No constraints - accepts any files
- * const anyFilesSchema = filesSchema();
+ * const anyFilesSchema = new FilesSchema().toZod();
  *
  * @example
  * // Validate 1-5 image files under 10MB each
- * const imageFilesSchema = filesSchema({
- *   acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/gif'],
- *   maxSize: 10 * 1024 * 1024, // 10MB
- *   minFiles: 1,
- *   maxFiles: 5
- * });
+ * const imageFilesSchema = new FilesSchema()
+ *   .mimes(['image/jpeg', 'image/png', 'image/gif'])
+ *   .maxSize(10 * 1024 * 1024) // 10MB
+ *   .minFiles(1)
+ *   .maxFiles(5)
+ *   .toZod();
  *
  * @example
  * // Validate documents with size constraints and custom messages
- * const docFilesSchema = filesSchema({
- *   acceptedMimeTypes: ['application/pdf', 'application/msword'],
- *   minSize: 1024, // 1KB minimum
- *   maxSize: 50 * 1024 * 1024 // 50MB maximum
- * }, {
- *   fileTooLargeMessage: 'Document must be smaller than 50MB',
- *   invalidMimeTypeMessage: 'Only PDF and Word documents are allowed'
- * });
+ * const docFilesSchema = new FilesSchema()
+ *   .mimes(['application/pdf', 'application/msword'], 'Only PDF and Word documents are allowed')
+ *   .minSize(1024) // 1KB minimum
+ *   .maxSize(50 * 1024 * 1024, 'Document must be smaller than 50MB') // 50MB maximum
+ *   .toZod();
  */
-export const filesSchema = (
-	options?: {
+class FilesSchema {
+	private options: {
 		minSize?: number;
 		maxSize?: number;
 		minFiles?: number;
 		maxFiles?: number;
-		acceptedMimeTypes?: string[];
-	},
-	errors?: {
+		mimes?: string[];
+	} = {};
+
+	private errors: {
 		fileTooSmall?: string;
 		fileTooLarge?: string;
 		invalidMimeType?: string;
 		tooFewFiles?: string;
 		tooManyFiles?: string;
-	},
-) =>
-	z.preprocess(
-		(val) => (val as []).filter((v) => v !== "null"),
-		(() => {
-			const fileSchema = z.file();
-			if (options?.minSize !== undefined) {
-				fileSchema.min(options.minSize, {
-					error:
-						errors?.fileTooSmall ??
-						`File size must be at least ${(options.minSize / 1024 / 1024).toFixed(2)} MB.`,
-				});
-			}
-			if (options?.maxSize !== undefined) {
-				fileSchema.max(options.maxSize, {
-					error:
-						errors?.fileTooLarge ??
-						`File size must be less than ${(options.maxSize / 1024 / 1024).toFixed(2)} MB.`,
-				});
-			}
-			if (options?.acceptedMimeTypes !== undefined) {
-				fileSchema.mime(options.acceptedMimeTypes, {
-					error:
-						errors?.invalidMimeType ??
-						`Only ${options.acceptedMimeTypes.join(", ")} files are allowed.`,
-				});
-			}
+	} = {};
 
-			const arraySchema = z.array(fileSchema);
-			if (options?.minFiles !== undefined) {
-				arraySchema.min(options.minFiles, {
-					error:
-						errors?.tooFewFiles ??
-						`At least ${options.minFiles} file(s) required.`,
-				});
-			}
-			if (options?.maxFiles !== undefined) {
-				arraySchema.max(options.maxFiles, {
-					error:
-						errors?.tooManyFiles ??
-						`Maximum ${options.maxFiles} file(s) allowed.`,
-				});
-			}
+	/**
+	 * Set minimum file size in bytes
+	 * @param size - Minimum file size in bytes
+	 * @param error - Custom error message for files that are too small
+	 */
+	minSize(size: number, error?: string): this {
+		this.options.minSize = size;
+		if (error) this.errors.fileTooSmall = error;
+		return this;
+	}
 
-			return arraySchema;
-		})(),
-	);
+	/**
+	 * Set maximum file size in bytes
+	 * @param size - Maximum file size in bytes
+	 * @param error - Custom error message for files that are too large
+	 */
+	maxSize(size: number, error?: string): this {
+		this.options.maxSize = size;
+		if (error) this.errors.fileTooLarge = error;
+		return this;
+	}
+
+	/**
+	 * Set minimum number of files required
+	 * @param count - Minimum number of files required
+	 * @param error - Custom error message for too few files
+	 */
+	minFiles(count: number, error?: string): this {
+		this.options.minFiles = count;
+		if (error) this.errors.tooFewFiles = error;
+		return this;
+	}
+
+	/**
+	 * Set maximum number of files allowed
+	 * @param count - Maximum number of files allowed
+	 * @param error - Custom error message for too many files
+	 */
+	maxFiles(count: number, error?: string): this {
+		this.options.maxFiles = count;
+		if (error) this.errors.tooManyFiles = error;
+		return this;
+	}
+
+	/**
+	 * Set accepted MIME types
+	 * @param types - Array of accepted MIME types
+	 * @param error - Custom error message for invalid MIME types
+	 */
+	mimes(types: string[], error?: string): this {
+		this.options.mimes = types;
+		if (error) this.errors.invalidMimeType = error;
+		return this;
+	}
+
+	/**
+	 * Generate the Zod schema based on the configured options
+	 */
+	toZod(): z.ZodType<File[]> {
+		return z.preprocess(
+			(val) => (val as []).filter((v) => v !== "null"),
+			(() => {
+				let fileSchema = z.file();
+				if (this.options.minSize !== undefined) {
+					fileSchema = fileSchema.min(this.options.minSize, {
+						error:
+							this.errors.fileTooSmall ??
+							`File size must be at least ${(this.options.minSize / 1024 / 1024).toFixed(2)} MB.`,
+					});
+				}
+				if (this.options.maxSize !== undefined) {
+					fileSchema = fileSchema.max(this.options.maxSize, {
+						error:
+							this.errors.fileTooLarge ??
+							`File size must be less than ${(this.options.maxSize / 1024 / 1024).toFixed(2)} MB.`,
+					});
+				}
+				if (this.options.mimes !== undefined) {
+					fileSchema = fileSchema.mime(this.options.mimes, {
+						error:
+							this.errors.invalidMimeType ??
+							`Only ${this.options.mimes.join(", ")} files are allowed.`,
+					});
+				}
+
+				let arraySchema = z.array(fileSchema);
+				if (this.options.minFiles !== undefined) {
+					arraySchema = arraySchema.min(this.options.minFiles, {
+						error:
+							this.errors.tooFewFiles ??
+							`At least ${this.options.minFiles} file(s) required.`,
+					});
+				}
+				if (this.options.maxFiles !== undefined) {
+					arraySchema = arraySchema.max(this.options.maxFiles, {
+						error:
+							this.errors.tooManyFiles ??
+							`Maximum ${this.options.maxFiles} file(s) allowed.`,
+					});
+				}
+
+				return arraySchema;
+			})(),
+		);
+	}
+}
+
+/**
+ * Creates a new FilesSchema builder instance
+ * @returns A new FilesSchema instance for chaining
+ */
+export const filesSchema = () => new FilesSchema();
