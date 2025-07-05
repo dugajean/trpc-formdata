@@ -6,7 +6,7 @@ console.log(
 		external: ["@trpc/server", "@trpc/client", "zod"],
 		outdir: "./dist",
 		splitting: true,
-		// minify: true,
+		minify: true,
 		plugins: [dts()],
 	}),
 );

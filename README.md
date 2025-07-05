@@ -45,10 +45,11 @@ const createUserSchema = formDataInput( /* 👈 */
   z.object({
     name: z.string().min(1, "Name is required"),
     email: z.string().email("Invalid email"),
-    documents: zFile({ /* 👈 */
-      acceptedMimeTypes: ["application/pdf"],
-      maxSize: 10 * 1024 * 1024, // 10MB
-    }).array(),
+    /* 👇 */
+    documents: filesSchema()
+      .acceptedMimeTypes(['application/pdf'])
+      .maxSize(10 * 1024 * 1024) // 10MB
+      .toZod(),
   })
 );
 
@@ -58,7 +59,7 @@ const appRouter = router({
       .input(createUserSchema)
       .mutation(async ({ input }) => {
         // input is fully typed!
-        const { avatar, documents } = input; /* 👈 */
+        const { documents } = input; /* 👈 */
         // ...
       }),
   },
@@ -136,9 +137,55 @@ const schema = formDataInput(
 );
 ```
 
+### `filesSchema()`
+
+Creates a chainable builder for validating arrays of File objects with optional constraints.
+
+```typescript
+import { filesSchema } from "trpc-formdata/zod";
+
+// Basic file validation - accepts any files
+const anyFilesSchema = filesSchema().toZod();
+
+// With constraints using method chaining
+const imageSchema = filesSchema()
+  .acceptedMimeTypes(['image/jpeg', 'image/png', 'image/gif'])
+  .maxSize(5 * 1024 * 1024) // 5MB
+  .minSize(1024) // 1KB
+  .minFiles(1) // At least 1 file
+  .maxFiles(10) // At most 10 files
+  .toZod();
+
+// With custom error messages
+const documentSchema = filesSchema()
+  .acceptedMimeTypes(['application/pdf'], 'Only PDF files are allowed')
+  .maxSize(10 * 1024 * 1024, 'File must be smaller than 10MB')
+  .minFiles(1, 'At least one document is required')
+  .toZod();
+
+// Chaining methods for complex validation
+const profileImagesSchema = filesSchema()
+  .acceptedMimeTypes(['image/jpeg', 'image/png'])
+  .maxSize(2 * 1024 * 1024, 'Images must be under 2MB')
+  .minFiles(1, 'Profile must have at least one image')
+  .maxFiles(3, 'Maximum 3 profile images allowed')
+  .toZod();
+```
+
+#### Available Methods
+
+- **`.acceptedMimeTypes(types, error?)`**: Set accepted MIME types
+- **`.maxSize(bytes, error?)`**: Set maximum file size in bytes
+- **`.minSize(bytes, error?)`**: Set minimum file size in bytes
+- **`.minFiles(count, error?)`**: Set minimum number of files required
+- **`.maxFiles(count, error?)`**: Set maximum number of files allowed
+- **`.toZod()`**: Generate the final Zod schema
+
+Each method accepts an optional second parameter for custom error messages.
+
 ### `zFile(options?, messages?)`
 
-Creates a Zod schema for File validation with optional constraints.
+Creates a Zod schema for individual File validation with optional constraints.
 
 #### Options
 
@@ -177,7 +224,7 @@ const documentSchema = zFile(
   }
 );
 
-// Arrays of files
+// Arrays of files using zFile
 const multipleFilesSchema = zFile({
   acceptedMimeTypes: ["image/*"],
   maxSize: 2 * 1024 * 1024,
@@ -230,10 +277,12 @@ const formData = objectToFormData(data);
 const multiUploadSchema = formDataInput(
   z.object({
     category: z.enum(["documents", "images", "videos"]),
-    files: zFile({
-      acceptedMimeTypes: ["*/*"], // Accept all types
-      maxSize: 100 * 1024 * 1024, // 100MB per file
-    }).array().min(1).max(10), // 1-10 files
+    files: filesSchema() /* 👈 */
+      .acceptedMimeTypes(['*/*']) // Accept all types
+      .maxSize(100 * 1024 * 1024) // 100MB per file
+      .minFiles(1) // At least 1 file
+      .maxFiles(10) // At most 10 files
+      .toZod(),
   })
 );
 
@@ -267,17 +316,18 @@ const profileSchema = formDataInput(
     // Boolean fields
     isPublic: z.boolean(),
     
-    // File fields
+    // Single file field
     avatar: zFile({
       acceptedMimeTypes: ["image/jpeg", "image/png"],
       maxSize: 5 * 1024 * 1024,
     }).optional(),
     
-    // Array of files
-    portfolioImages: zFile({
-      acceptedMimeTypes: ["image/*"],
-      maxSize: 10 * 1024 * 1024,
-    }).array().max(5),
+    // Array of files using filesSchema
+    portfolioImages: filesSchema()
+      .acceptedMimeTypes(['image/*'])
+      .maxSize(10 * 1024 * 1024)
+      .maxFiles(5)
+      .toZod(),
   })
 );
 
@@ -310,17 +360,17 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { createHTTPServer } from "@trpc/server/adapters/standalone";
 import { z } from "zod";
-import { formDataInput, zFile } from "trpc-formdata/zod";
+import { formDataInput, filesSchema } from "trpc-formdata/zod";
 import { publicProcedure, router } from "./trpc";
 import { db } from "./db";
 
 const createInputSchema = formDataInput(
   z.object({
     name: z.string().min(1, "Name is required"),
-    files: zFile({
-      acceptedMimeTypes: ["text/plain"],
-      maxSize: 5 * 1024 * 1024, // 5MB
-    }).array(),
+    files: filesSchema()
+      .acceptedMimeTypes(['text/plain'])
+      .maxSize(5 * 1024 * 1024) // 5MB
+      .toZod(),
   }),
 );
 
