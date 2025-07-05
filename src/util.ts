@@ -5,12 +5,18 @@
  * @param data - The object to convert to FormData
  * @returns A FormData instance containing the object's key-value pairs
  */
-function objectToFormData(data: Record<string, any>): FormData {
+function objectToFormData(
+	data: Record<string, any>,
+	castToArray: string[] = [],
+): FormData {
 	const formData = new FormData();
 	for (const key in data) {
-		const value = data[key];
-		if (Array.isArray(value)) {
-			for (const item of value) formData.append(key, item);
+		let value = data[key];
+		if (Array.isArray(value) || castToArray.includes(key)) {
+			value = Array.isArray(value) && value.length > 1 ? value : [value, null];
+			for (const item of value) {
+				formData.append(key, item);
+			}
 			continue;
 		}
 		formData.append(key, value);
