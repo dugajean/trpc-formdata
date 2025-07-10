@@ -37,7 +37,7 @@ Create your tRPC router with FormData input validation:
 ```typescript
 import { createHTTPServer } from "@trpc/server/adapters/standalone";
 import { z } from "zod";
-import { formDataInput, zFile } from "trpc-formdata/zod";
+import { formDataInput } from "trpc-formdata/zod";
 import { publicProcedure, router } from "./trpc";
 
 // Define your FormData schema
@@ -183,54 +183,6 @@ const profileImagesSchema = filesSchema()
 
 Each method accepts an optional second parameter for custom error messages.
 
-### `zFile(options?, messages?)`
-
-Creates a Zod schema for individual File validation with optional constraints.
-
-#### Options
-
-- **acceptedMimeTypes**: Array of accepted MIME types
-- **maxSize**: Maximum file size in bytes
-- **minSize**: Minimum file size in bytes
-
-#### Custom Error Messages
-
-- **invalidTypeMessage**: Custom message for invalid file types
-- **fileTooLargeMessage**: Custom message for oversized files
-- **fileTooSmallMessage**: Custom message for undersized files
-
-```typescript
-import { zFile } from "trpc-formdata/zod";
-
-// Basic file validation
-const fileSchema = zFile();
-
-// With constraints
-const imageSchema = zFile({
-  acceptedMimeTypes: ["image/jpeg", "image/png", "image/gif"],
-  maxSize: 5 * 1024 * 1024, // 5MB
-  minSize: 1024, // 1KB
-});
-
-// With custom messages
-const documentSchema = zFile(
-  {
-    acceptedMimeTypes: ["application/pdf"],
-    maxSize: 10 * 1024 * 1024,
-  },
-  {
-    invalidTypeMessage: "Only PDF files are allowed",
-    fileTooLargeMessage: "File must be smaller than 10MB",
-  }
-);
-
-// Arrays of files using zFile
-const multipleFilesSchema = zFile({
-  acceptedMimeTypes: ["image/*"],
-  maxSize: 2 * 1024 * 1024,
-}).array();
-```
-
 ### Utility Functions
 
 The library also exports utility functions for manual FormData conversion:
@@ -315,12 +267,6 @@ const profileSchema = formDataInput(
     
     // Boolean fields
     isPublic: z.boolean(),
-    
-    // Single file field
-    avatar: zFile({
-      acceptedMimeTypes: ["image/jpeg", "image/png"],
-      maxSize: 5 * 1024 * 1024,
-    }).optional(),
     
     // Array of files using filesSchema
     portfolioImages: filesSchema()
