@@ -47,7 +47,7 @@ const createUserSchema = formDataInput( /* 👈 */
     email: z.string().email("Invalid email"),
     /* 👇 */
     documents: filesSchema()
-      .acceptedMimeTypes(['application/pdf'])
+      .mimes(['application/pdf'])
       .maxSize(10 * 1024 * 1024) // 10MB
       .toZod(),
   })
@@ -149,7 +149,7 @@ const anyFilesSchema = filesSchema().toZod();
 
 // With constraints using method chaining
 const imageSchema = filesSchema()
-  .acceptedMimeTypes(['image/jpeg', 'image/png', 'image/gif'])
+  .mimes(['image/jpeg', 'image/png', 'image/gif'])
   .maxSize(5 * 1024 * 1024) // 5MB
   .minSize(1024) // 1KB
   .minFiles(1) // At least 1 file
@@ -158,14 +158,14 @@ const imageSchema = filesSchema()
 
 // With custom error messages
 const documentSchema = filesSchema()
-  .acceptedMimeTypes(['application/pdf'], 'Only PDF files are allowed')
+  .mimes(['application/pdf'], 'Only PDF files are allowed')
   .maxSize(10 * 1024 * 1024, 'File must be smaller than 10MB')
   .minFiles(1, 'At least one document is required')
   .toZod();
 
 // Chaining methods for complex validation
 const profileImagesSchema = filesSchema()
-  .acceptedMimeTypes(['image/jpeg', 'image/png'])
+  .mimes(['image/jpeg', 'image/png'])
   .maxSize(2 * 1024 * 1024, 'Images must be under 2MB')
   .minFiles(1, 'Profile must have at least one image')
   .maxFiles(3, 'Maximum 3 profile images allowed')
@@ -174,7 +174,7 @@ const profileImagesSchema = filesSchema()
 
 #### Available Methods
 
-- **`.acceptedMimeTypes(types, error?)`**: Set accepted MIME types
+- **`.mimes(types, error?)`**: Set accepted MIME types
 - **`.maxSize(bytes, error?)`**: Set maximum file size in bytes
 - **`.minSize(bytes, error?)`**: Set minimum file size in bytes
 - **`.minFiles(count, error?)`**: Set minimum number of files required
@@ -230,7 +230,7 @@ const multiUploadSchema = formDataInput(
   z.object({
     category: z.enum(["documents", "images", "videos"]),
     files: filesSchema() /* 👈 */
-      .acceptedMimeTypes(['*/*']) // Accept all types
+      .mimes(['*/*']) // Accept all types
       .maxSize(100 * 1024 * 1024) // 100MB per file
       .minFiles(1) // At least 1 file
       .maxFiles(10) // At most 10 files
@@ -270,7 +270,7 @@ const profileSchema = formDataInput(
     
     // Array of files using filesSchema
     portfolioImages: filesSchema()
-      .acceptedMimeTypes(['image/*'])
+      .mimes(['image/*'])
       .maxSize(10 * 1024 * 1024)
       .maxFiles(5)
       .toZod(),
@@ -314,7 +314,7 @@ const createInputSchema = formDataInput(
   z.object({
     name: z.string().min(1, "Name is required"),
     files: filesSchema()
-      .acceptedMimeTypes(['text/plain'])
+      .mimes(['text/plain'])
       .maxSize(5 * 1024 * 1024) // 5MB
       .toZod(),
   }),
